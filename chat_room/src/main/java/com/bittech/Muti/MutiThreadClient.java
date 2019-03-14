@@ -66,8 +66,9 @@ class WriteThread implements Runnable{
                 if (str.equals("quit")){
                     System.out.println("该用户下线！");
                     client.close();
-                    scanner.close();;
                     out.close();
+                    scanner.close();
+                    client.close();
                     break;
                 }
             }
