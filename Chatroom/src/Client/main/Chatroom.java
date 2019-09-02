@@ -20,6 +20,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
+/**
+ * 用户列表中每个用户显示状态
+ */
+
 class CellRenderer extends JLabel implements ListCellRenderer {
     CellRenderer() {
         setOpaque(true);
@@ -28,18 +32,20 @@ class CellRenderer extends JLabel implements ListCellRenderer {
     public Component getListCellRendererComponent(JList list, Object value,
                                                   int index, boolean isSelected, boolean cellHasFocus) {
 
-        setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));// ������Ϊ5�Ŀհױ߿�
+        setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
         if (value != null) {
             setText(value.toString());
             setIcon(new ImageIcon("images//1.jpg"));
         }
+        //设置用户被选中和未被选中两种前景与背景颜色状态显示
         if (isSelected) {
-            setBackground(new Color(255, 255, 153));// ���ñ���ɫ
-            setForeground(Color.black);
+            //被选中
+            setBackground(new Color(255, 255, 153));//背景色
+            setForeground(Color.black);//字体色
         } else {
-            // ����ѡȡ��ȡ��ѡȡ��ǰ���뱳����ɫ.
-            setBackground(Color.white); // ���ñ���ɫ
+            // 未被选中
+            setBackground(Color.white);
             setForeground(Color.black);
         }
         setEnabled(list.isEnabled());
@@ -93,9 +99,11 @@ public class Chatroom extends JFrame {
     private static boolean isReceiveFile = false;
 
 
+    //声音
     private static File file, file2;
     private static URL cb, cb2;
     private static AudioClip aau, aau2;  //播放音频
+    private File contentFile;
 
 
 
@@ -108,7 +116,7 @@ public class Chatroom extends JFrame {
         SwingUtilities.updateComponentTreeUI(this);  //简单的外观更改
 
         try {
-            UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");  //设置显示方式
+            UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");  //改变窗口显示风格
         } catch (ClassNotFoundException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();
@@ -124,52 +132,76 @@ public class Chatroom extends JFrame {
         }
 
 
-
         setTitle(name);
         setResizable(false);  //设置次窗体是否可由用户调整大小
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        setBounds(200, 100, 688, 510);
+        setBounds(200, 100, 688, 550);
         contentPane = new JPanel() {
             private static final long serialVersionUID = 1L;
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                g.drawImage(new ImageIcon("images\\注册1.jpg").getImage(), 0, 0,
+                g.drawImage(new ImageIcon("images\\聊天室1.jpg").getImage(), 0, 0,
                         getWidth(), getHeight(), null);
             }
 
         };
+
+
+            contentFile = new File(name);
+
+
         setContentPane(contentPane);
         contentPane.setLayout(null);
 
 
+        //聊天信息显示区域
         JScrollPane scrollPane = new JScrollPane();  //滚动面板
         scrollPane.setBounds(10, 10, 410, 300);
         getContentPane().add(scrollPane);
 
+        //聊天信息显示框
         textArea = new JTextArea();  //文本域
         textArea.setEditable(false);
         textArea.setLineWrap(true);//自动换行
         textArea.setWrapStyleWord(true);//自动换行方式，行的长度大于所分配的宽度，在单词边界处换行
         textArea.setFont(new Font("sdf", Font.BOLD, 13));
+        //将以往聊天记录显示在聊天信息框
+        try{
+            BufferedReader br = new BufferedReader(new FileReader(contentFile));
+            String tempString = null;
+            textArea.setFont(new Font("sdf",Font.BOLD,13));
+            while ((tempString = br.readLine()) != null){
+                textArea.append(tempString+"\n");
+            }
+            textArea.setFont(new Font("sdf",Font.BOLD,17));
+            br.close();
+        } catch (IOException e3) {
+            e3.printStackTrace();
+        }
         scrollPane.setViewportView(textArea);//设置视图
 
+        //打字区域
         JScrollPane scrollPane_1 = new JScrollPane();
         scrollPane_1.setBounds(10, 347, 411, 97);
         getContentPane().add(scrollPane_1);
 
+        //输入信息显示框
         final JTextArea textArea_1 = new JTextArea();
         textArea_1.setLineWrap(true);
         textArea_1.setWrapStyleWord(true);
+        textArea_1.setFont(new Font("sdf",Font.PLAIN,18));
         scrollPane_1.setViewportView(textArea_1);
 
-        // 关闭
+        // 关闭按钮
         final JButton btnNewButton = new JButton("关闭");
+        btnNewButton.setMargin(new Insets(0,0,0,0));  //解决汉字不显示问题
         btnNewButton.setBounds(214, 448, 60, 30);
         getContentPane().add(btnNewButton);
 
-        //发送
+        //发送按钮
         JButton btnNewButton_1 = new JButton("发送");
+        btnNewButton_1.setMargin(new Insets(0,0,0,0));  //解决汉字不显示问题
         btnNewButton_1.setBounds(313, 448, 60, 30);
         getRootPane().setDefaultButton(btnNewButton_1);
         getContentPane().add(btnNewButton_1);
@@ -233,21 +265,23 @@ public class Chatroom extends JFrame {
             e.printStackTrace();
         }
 
-        // 按钮事件监听
+        // 发送按钮事件监听
         btnNewButton_1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String info = textArea_1.getText();
                 List to = list.getSelectedValuesList();  //获取在线用户列表
-
+                //若未选择对象
                 if (to.size() < 1) {
                     JOptionPane.showMessageDialog(getContentPane(), "请选择聊天对象");
                     return;
                 }
+                //若选择对象为自己
                 if (to.toString().contains(name+"(我)")) {
                     JOptionPane
                             .showMessageDialog(getContentPane(), "不能向自己发送信息");
                     return;
                 }
+                //若发送消息为空
                 if (info.equals("")) {
                     JOptionPane.showMessageDialog(getContentPane(), "发送消息不能为空");
                     return;
@@ -263,11 +297,23 @@ public class Chatroom extends JFrame {
                 HashSet set = new HashSet();
                 set.addAll(to);
                 clientBean.setClients(set);
+                sendMessage(clientBean);
 
                 // 自己发送的内容也显示在自己的对话框中
                 textArea.append(time + " 我对" + to + "说:\r\n" + info + "\r\n");
 
-                sendMessage(clientBean);
+                //将发送消息保存在本地文件中，作为聊天记录
+                try{
+                    FileWriter fw = new FileWriter(contentFile,true);
+                    BufferedWriter bw = new BufferedWriter(fw);
+                    bw.write(time+"我对<"+to+">说:\r\n"+info+"\r\n");
+
+                    bw.close();
+                    fw.close();
+                }catch (IOException e1){
+                    e1.printStackTrace();
+                }
+                //清空发送消息栏并重新获取焦点
                 textArea_1.setText(null);
                 textArea_1.requestFocus();
             }
@@ -318,7 +364,7 @@ public class Chatroom extends JFrame {
             }
         });
 
-        // 鼠标监听事件
+        // 在线用户列表监听
         list.addMouseListener(new MouseAdapter() {
 
             @Override
@@ -417,6 +463,17 @@ public class Chatroom extends JFrame {
                             }
                             aau.play();
                             textArea.append(info+bean.getInfo() + "\r\n");
+                            //将对方发送的消息写入聊天记录中
+                            try{
+                                FileWriter fw = new FileWriter(contentFile,true);
+                                BufferedWriter bw = new BufferedWriter(fw);
+                                bw.write(info+bean.getInfo()+"\r\n");
+
+                                bw.close();
+                                fw.close();
+                            }catch (IOException e){
+                                e.printStackTrace();
+                            }
                             textArea.selectAll();
                             break;
                         }
@@ -461,9 +518,6 @@ public class Chatroom extends JFrame {
                                                 clientBean.setIp(clientSocket.getInetAddress().getHostAddress());
                                                 clientBean.setPort(ss.getLocalPort());
                                                 sendMessage(clientBean); //通过服务器告诉发送方，你可以发送文件到我这里了
-
-
-
                                                 isReceiveFile=true;
                                                 //等待目标来源的客户
                                                 Socket sk = ss.accept();
@@ -646,7 +700,7 @@ public class Chatroom extends JFrame {
             oos = new ObjectOutputStream(clientSocket.getOutputStream());
             oos.writeObject(clientBean);
             oos.flush();
-            
+
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

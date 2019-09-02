@@ -1,8 +1,10 @@
 package Server.main;
 
 
-import Client.function.ChatBean;
-import Client.function.ClientBean;
+
+
+import Server.function.ChatBean;
+import Server.function.ClientBean;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -16,7 +18,7 @@ public class ChatServer {
     public static HashMap<String, ClientBean> onlines;
     static {
         try {
-            ss = new ServerSocket(8520);
+            ss = new ServerSocket(6669);
             onlines = new HashMap<String, ClientBean>();
         } catch (IOException e) {
             // TODO Auto-generated catch block
@@ -39,7 +41,7 @@ public class ChatServer {
             try {
                 // 不停的从客户端接收消息
                 while (true) {
-                    // 获取输入流 读取从客户端接收到额ChatBean消息
+                    // 获取输入流 读取从客户端接收到ChatBean消息
                     ois = new ObjectInputStream(client.getInputStream());
                     bean = (ChatBean)ois.readObject();
 
